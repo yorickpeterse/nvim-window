@@ -104,7 +104,7 @@ local function open_floats(mapping)
 end
 
 -- Configures the plugin by merging the given settings into the default ones.
-function m.setup(user_config)
+function M.setup(user_config)
   config = vim.tbl_extend('force', config, user_config)
 end
 
