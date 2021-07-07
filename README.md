@@ -58,6 +58,12 @@ You can see this in action here:
 
 NeoVim 0.5 or newer
 
+## Limitations
+
+- Limited styling options to keep the code simple
+- "Only" handles up to 52 windows in a single tab page
+- No hinting of characters as you type (like hop.nvim), to keep the code simple
+
 ## Installation
 
 First add this plugin using your plugin manager of choice. For example, using
