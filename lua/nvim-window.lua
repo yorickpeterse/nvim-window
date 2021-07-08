@@ -41,10 +41,13 @@ local function window_keys(windows)
   local chars = config.chars
 
   for _, win in ipairs(windows) do
-    local key = chars[(win % #chars) + 1]
+    -- We use the window number (not the ID) as these are more consistent. This
+    -- in turn should result in a more consistent choice of window keys.
+    local win_nr = api.nvim_win_get_number(win)
+    local key = chars[(win_nr % #chars) + 1]
 
     if mapping[key] then
-      key = key .. chars[((win + 1) % #chars) + 1]
+      key = key .. chars[((win_nr + 1) % #chars) + 1]
     end
 
     mapping[key] = win
