@@ -98,6 +98,7 @@ local function open_floats(mapping)
       })
 
       api.nvim_win_set_option(float_window, 'winhl', 'Normal:' .. config.normal_hl)
+      api.nvim_win_set_option(float_window, 'diff', false)
 
       floats[float_window] = bufnr
     end
