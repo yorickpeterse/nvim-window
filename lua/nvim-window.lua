@@ -39,18 +39,31 @@ end
 local function window_keys(windows)
   local mapping = {}
   local chars = config.chars
+  local nrs = {}
+  local ids = {}
 
+  -- We use the window number (not the ID) as these are more consistent. This in
+  -- turn should result in a more consistent choice of window keys.
   for _, win in ipairs(windows) do
-    -- We use the window number (not the ID) as these are more consistent. This
-    -- in turn should result in a more consistent choice of window keys.
-    local win_nr = api.nvim_win_get_number(win)
-    local key = chars[(win_nr % #chars) + 1]
+    local nr = api.nvim_win_get_number(win)
+
+    table.insert(nrs, nr)
+    ids[nr] = win
+  end
+
+  table.sort(nrs)
+
+  local index = 1
+
+  for _, win_nr in ipairs(nrs) do
+    local key = chars[index]
 
     if mapping[key] then
-      key = key .. chars[((win_nr + 1) % #chars) + 1]
+      key = key .. (index == #chars and chars[1] or chars[index + 1])
     end
 
-    mapping[key] = win
+    mapping[key] = ids[win_nr]
+    index = index == #chars and 1 or index + 1
   end
 
   return mapping
