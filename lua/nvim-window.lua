@@ -15,8 +15,32 @@ local float_width = 6
 local config = {
   -- The characters available for hinting windows.
   chars = {
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-    'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+    'f',
+    'g',
+    'h',
+    'i',
+    'j',
+    'k',
+    'l',
+    'm',
+    'n',
+    'o',
+    'p',
+    'q',
+    'r',
+    's',
+    't',
+    'u',
+    'v',
+    'w',
+    'x',
+    'y',
+    'z',
   },
 
   -- A group to use for overwriting the Normal highlight group in the floating
@@ -28,7 +52,7 @@ local config = {
   hint_hl = 'Bold',
 
   -- The border style to use for the floating window.
-  border = 'single'
+  border = 'single',
 }
 
 -- Returns a table that maps the hint keys to their corresponding windows.
@@ -97,7 +121,13 @@ local function open_floats(mapping)
       local row = math.max(0, math.floor((win_height / 2) - 1))
       local col = math.max(0, math.floor((win_width / 2) - float_width))
 
-      api.nvim_buf_set_lines(bufnr, 0, -1, true, { '', '  ' .. key .. '  ', '' })
+      api.nvim_buf_set_lines(
+        bufnr,
+        0,
+        -1,
+        true,
+        { '', '  ' .. key .. '  ', '' }
+      )
       api.nvim_buf_add_highlight(bufnr, 0, config.hint_hl, 1, 0, -1)
 
       local float_window = api.nvim_open_win(bufnr, false, {
@@ -110,10 +140,14 @@ local function open_floats(mapping)
         focusable = false,
         style = 'minimal',
         border = config.border,
-        noautocmd = true
+        noautocmd = true,
       })
 
-      api.nvim_win_set_option(float_window, 'winhl', 'Normal:' .. config.normal_hl)
+      api.nvim_win_set_option(
+        float_window,
+        'winhl',
+        'Normal:' .. config.normal_hl
+      )
       api.nvim_win_set_option(float_window, 'diff', false)
 
       floats[float_window] = bufnr
@@ -146,13 +180,9 @@ end
 
 -- Picks a window to jump to, and makes it the active window.
 function M.pick()
-  local windows =
-    vim.tbl_filter(
-      function(id)
-        return api.nvim_win_get_config(id).relative == ''
-      end,
-      api.nvim_tabpage_list_wins(0)
-    )
+  local windows = vim.tbl_filter(function(id)
+    return api.nvim_win_get_config(id).relative == ''
+  end, api.nvim_tabpage_list_wins(0))
 
   local window_keys = window_keys(windows)
   local floats = open_floats(window_keys)
