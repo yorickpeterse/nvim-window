@@ -31,16 +31,13 @@ local config = {
   border = 'single'
 }
 
-local function is_regular_window(winid)
-  return api.nvim_win_get_config(winid).relative == ''
-end
-
 -- Returns a table that maps the hint keys to their corresponding windows.
 local function window_keys(windows)
   local mapping = {}
   local chars = config.chars
   local nrs = {}
   local ids = {}
+  local current = api.nvim_win_get_number(api.nvim_get_current_win())
 
   -- We use the window number (not the ID) as these are more consistent. This in
   -- turn should result in a more consistent choice of window keys.
@@ -55,14 +52,20 @@ local function window_keys(windows)
 
   local index = 1
 
-  for _, win_nr in ipairs(nrs) do
-    local key = chars[index]
+  for _, nr in ipairs(nrs) do
+    -- We skip the current window here so that we still "reserve" it the
+    -- character, but don't include it in the output. This ensures that window X
+    -- always gets hint Y, regardless of what the current active window is.
+    if nr ~= current then
+      local key = chars[index]
 
-    if mapping[key] then
-      key = key .. (index == #chars and chars[1] or chars[index + 1])
+      if mapping[key] then
+        key = key .. (index == #chars and chars[1] or chars[index + 1])
+      end
+
+      mapping[key] = ids[nr]
     end
 
-    mapping[key] = ids[win_nr]
     index = index == #chars and 1 or index + 1
   end
 
@@ -128,7 +131,12 @@ end
 -- Picks a window to jump to, and makes it the active window.
 function M.pick()
   local windows =
-    vim.tbl_filter(is_regular_window, api.nvim_tabpage_list_wins(0))
+    vim.tbl_filter(
+      function(id)
+        return api.nvim_win_get_config(id).relative == ''
+      end,
+      api.nvim_tabpage_list_wins(0)
+    )
 
   local window_keys = window_keys(windows)
   local floats = open_floats(window_keys)
