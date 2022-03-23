@@ -120,7 +120,23 @@ local function open_floats(mapping)
     end
   end
 
+  -- We need to redraw here, otherwise the floats won't show up
+  vim.cmd('redraw')
+
   return floats
+end
+
+local function close_floats(floats)
+  for window, bufnr in pairs(floats) do
+    api.nvim_win_close(window, true)
+    api.nvim_buf_delete(bufnr, { force = true })
+  end
+end
+
+local function get_char()
+  local ok, char = pcall(fn.getchar)
+
+  return ok and fn.nr2char(char) or nil
 end
 
 -- Configures the plugin by merging the given settings into the default ones.
@@ -140,25 +156,42 @@ function M.pick()
 
   local window_keys = window_keys(windows)
   local floats = open_floats(window_keys)
+  local key = get_char()
+  local window = nil
 
-  -- We need to redraw here, otherwise the floats won't show up until after the
-  -- getchar() call.
-  vim.cmd('redraw')
+  if not key or key == escape then
+    close_floats(floats)
+    return
+  end
 
-  local char = fn.getchar()
-  local key = fn.nr2char(char)
   local window = window_keys[key]
+  local extra = {}
+  local choices = 0
 
-  -- Only ask for the second character if we actually have a pair that starts
-  -- with the first character.
-  if not window and char ~= escape and ask_second_char(window_keys, key) then
-    window = window_keys[key .. fn.nr2char(fn.getchar())]
+  for hint, win in pairs(window_keys) do
+    if vim.startswith(hint, key) then
+      extra[hint] = win
+      choices = choices + 1
+    end
   end
 
-  for window, bufnr in pairs(floats) do
-    api.nvim_win_close(window, true)
-    api.nvim_buf_delete(bufnr, { force = true })
+  if choices > 1 then
+    close_floats(floats)
+
+    floats = open_floats(extra)
+
+    local second = get_char()
+
+    if second then
+      local combined = key .. second
+
+      window = window_keys[combined] or window_keys[key]
+    else
+      window = nil
+    end
   end
+
+  close_floats(floats)
 
   if window then
     api.nvim_set_current_win(window)
