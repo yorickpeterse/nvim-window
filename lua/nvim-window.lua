@@ -179,7 +179,7 @@ function M.setup(user_config)
 end
 
 -- Picks a window to jump to, and makes it the active window.
-function M.pick()
+function M.pick(action)
   local windows = vim.tbl_filter(function(id)
     return api.nvim_win_get_config(id).relative == ''
   end, api.nvim_tabpage_list_wins(0))
@@ -224,7 +224,11 @@ function M.pick()
   close_floats(floats)
 
   if window then
-    api.nvim_set_current_win(window)
+    if action then
+      action(window)
+    else
+      api.nvim_set_current_win(window)
+    end
   end
 end
 
