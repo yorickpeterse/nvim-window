@@ -66,8 +66,21 @@ NeoVim 0.5 or newer
 
 ## Installation
 
-First add this plugin using your plugin manager of choice. For example, using
-vim-plug:
+First add this plugin using your plugin manager of choice.
+
+### lazy.nvim
+
+```lua
+{
+  "yorickpeterse/nvim-window",
+  keys = {
+    { "<leader>wj", "<cmd>lua require('nvim-window').pick()<cr>", desc = "nvim-window: Jump to window" },
+  },
+  config = true,
+}
+```
+
+### vim-plug
 
 ```vim
 Plug 'https://gitlab.com/yorickpeterse/nvim-window.git'
