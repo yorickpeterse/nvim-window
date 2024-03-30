@@ -53,6 +53,7 @@ local config = {
 
   -- The border style to use for the floating window.
   border = 'single',
+  only_uppercase = nil
 }
 
 -- Returns a table that maps the hint keys to their corresponding windows.
@@ -170,12 +171,42 @@ end
 local function get_char()
   local ok, char = pcall(fn.getchar)
 
-  return ok and fn.nr2char(char) or nil
+  if not ok then
+    return nil
+  end
+
+  if config.only_uppercase then
+    return fn.nr2char(char):gsub("%a", string.upper)
+  end
+
+  return fn.nr2char(char)
+end
+
+local function capitalizeAllCharsAndRemoveDuplicates(strings)
+  local tempTable = {}
+  local result = {}
+
+  for _, str in ipairs(strings) do
+    -- Capitalize each alphabetic character in the string
+    local capitalizedStr = str:gsub("%a", string.upper)
+
+    -- If the capitalized string hasn't been encountered yet, add it to the result
+    if not tempTable[capitalizedStr] then
+      table.insert(result, capitalizedStr)
+      tempTable[capitalizedStr] = true
+    end
+  end
+
+  return result
 end
 
 -- Configures the plugin by merging the given settings into the default ones.
 function M.setup(user_config)
   config = vim.tbl_extend('force', config, user_config)
+
+  if config.only_uppercase then
+    config.chars = capitalizeAllCharsAndRemoveDuplicates(config.chars)
+  end
 end
 
 -- Picks a window to jump to, and makes it the active window.
