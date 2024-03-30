@@ -53,6 +53,9 @@ local config = {
 
   -- The border style to use for the floating window.
   border = 'single',
+
+  -- converts all alphabetic hint characters and user input to uppercase
+  -- user doesn't have to hold down shift to select the uppercase hint characters
   only_uppercase = nil
 }
 
