@@ -120,6 +120,11 @@ require('nvim-window').setup({
 
   -- The border style to use for the floating window.
   border = 'single'
+
+  -- convert all chars to uppercase
+  -- removes need to press shift to select uppercase hint char
+  -- default is `nil`
+  only_uppercase = true
 })
 ```
 
@@ -135,6 +140,7 @@ require('nvim-window').setup({
   normal_hl = 'BlackOnLightYellow',
   hint_hl = 'Bold',
   border = 'none'
+
 })
 ```
 
