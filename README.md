@@ -120,6 +120,18 @@ require('nvim-window').setup({
 
   -- The border style to use for the floating window.
   border = 'single'
+
+  -- An optional callback after jumping to a window
+  -- In this example we activate insert mode if it's a terminal
+  --[[
+  after_jump_callback = function(window)
+    local buf_id = vim.api.nvim_win_get_buf(window)
+    local buf_type = vim.api.nvim_buf_get_option(buf_id, 'buftype')
+    if buf_type == 'terminal' then
+      vim.cmd 'startinsert'
+    end
+  end,
+  ]]
 })
 ```
 

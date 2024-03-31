@@ -53,6 +53,7 @@ local config = {
 
   -- The border style to use for the floating window.
   border = 'single',
+  after_jump_callback = function(_) end,
 }
 
 -- Returns a table that maps the hint keys to their corresponding windows.
@@ -225,6 +226,7 @@ function M.pick()
 
   if window then
     api.nvim_set_current_win(window)
+    config.after_jump_callback(window)
   end
 end
 
