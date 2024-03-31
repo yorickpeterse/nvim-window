@@ -3,6 +3,11 @@
 A simple and opinionated NeoVim plugin for switching between windows in the
 current tab page.
 
+**NOTE:** this plugin is considered feature complete, and as such no new
+features will be added _unless_ I have a need for it myself.
+
+## Rationale
+
 In (Neo)Vim you can navigate between windows using `Control+W`, followed by a
 motion. For example, to move to the window on the right of the current one you'd
 press `Control+W l`. This works for simple scenarios, but gets annoying fast.
