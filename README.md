@@ -57,7 +57,11 @@ active. This makes it _much_ easier to quickly jump between windows.
 
 You can see this in action here:
 
-[![nvim-window in action](screencast.png)](https://asciinema.org/a/424318)
+[![nvim-window using floating windows](https://asciinema.org/a/659545.svg)](https://asciinema.org/a/659545)
+
+You can also render the hints to the `statusline`:
+
+[![nvim-window using the statusline](https://asciinema.org/a/659546.svg)](https://asciinema.org/a/659546)
 
 ## Requirements
 
@@ -125,33 +129,19 @@ require('nvim-window').setup({
 
   -- The border style to use for the floating window.
   border = 'single'
+
+  -- How the hints should be rendered. The possible values are:
+  --
+  -- - "float" (default): renders the hints using floating windows
+  -- - "status": renders the hints to a string and calls `redrawstatus`,
+  --   allowing you to show the hints in a status or winbar line
+  render = 'float',
 })
 ```
 
 You can place this in your `init.lua` before or after defining the mapping. You
 can also dump it in a different Lua file; just make sure to actually load that
 file :)
-
-If you want to replicate the style from the recording, use the following
-settings:
-
-```lua
-require('nvim-window').setup({
-  normal_hl = 'BlackOnLightYellow',
-  hint_hl = 'Bold',
-  border = 'none'
-})
-```
-
-You then have to define the `BlackOnLightYellow` highlight group somewhere using
-these settings:
-
-```vim
-hi BlackOnLightYellow guifg=#000000 guibg=#f2de91
-```
-
-The theme used is [vim-paper](https://gitlab.com/yorickpeterse/vim-paper), which
-has this highlight group built-in.
 
 ## License
 

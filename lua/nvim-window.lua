@@ -53,7 +53,16 @@ local config = {
 
   -- The border style to use for the floating window.
   border = 'single',
+
+  -- How the hints should be rendered. The possible values are:
+  --
+  -- - "float" (default): renders the hints using floating windows
+  -- - "status": renders the hints to a string and calls `redrawstatus`,
+  --   allowing you to show the hints in a status or winbar line
+  render = 'float',
 }
+
+local hints = {}
 
 -- Returns a table that maps the hint keys to their corresponding windows.
 local function window_keys(windows)
@@ -143,12 +152,12 @@ local function open_floats(mapping)
         noautocmd = true,
       })
 
-      api.nvim_win_set_option(
-        float_window,
+      api.nvim_set_option_value(
         'winhl',
-        'Normal:' .. config.normal_hl
+        'Normal:' .. config.normal_hl,
+        { win = float_window }
       )
-      api.nvim_win_set_option(float_window, 'diff', false)
+      api.nvim_set_option_value('diff', false, { win = float_window })
 
       floats[float_window] = bufnr
     end
@@ -173,6 +182,40 @@ local function get_char()
   return ok and fn.nr2char(char) or nil
 end
 
+local function show_hints(keys, redraw)
+  if config.render == 'status' then
+    for key, win in pairs(keys) do
+      hints[win] = key
+    end
+
+    if redraw then
+      vim.cmd('redrawstatus!')
+    end
+  else
+    return open_floats(keys)
+  end
+end
+
+local function hide_hints(state, redraw)
+  if config.render == 'status' then
+    hints = {}
+
+    if redraw then
+      vim.cmd('redrawstatus!')
+    end
+  else
+    close_floats(state)
+  end
+end
+
+-- Returns the hint character(s) for the given window, or `nil` if there aren't
+-- any.
+--
+-- This method only returns a value if the `render` option is set to `status`.
+function M.hint(window)
+  return hints[window]
+end
+
 -- Configures the plugin by merging the given settings into the default ones.
 function M.setup(user_config)
   config = vim.tbl_extend('force', config, user_config)
@@ -185,12 +228,12 @@ function M.pick()
   end, api.nvim_tabpage_list_wins(0))
 
   local window_keys = window_keys(windows)
-  local floats = open_floats(window_keys)
+  local hints_state = show_hints(window_keys, true)
   local key = get_char()
   local window = nil
 
   if not key or key == escape then
-    close_floats(floats)
+    hide_hints(hints_state, true)
     return
   end
 
@@ -206,9 +249,8 @@ function M.pick()
   end
 
   if choices > 1 then
-    close_floats(floats)
-
-    floats = open_floats(extra)
+    hide_hints(hints_state, false)
+    hints_state = show_hints(extra, true)
 
     local second = get_char()
 
@@ -221,7 +263,7 @@ function M.pick()
     end
   end
 
-  close_floats(floats)
+  hide_hints(hints_state, true)
 
   if window then
     api.nvim_set_current_win(window)
