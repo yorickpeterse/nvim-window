@@ -105,6 +105,13 @@ key bindings for you. You can set up a binding like so:
 map <silent> <leader>w :lua require('nvim-window').pick()<CR>
 ```
 
+I personally use comma (`,`), as this allows me to switch between windows using
+(most of the time) only two keys:
+
+```vim
+map <silent> , :lua require('nvim-window').pick()<CR>
+```
+
 ## Configuration
 
 The default settings should be good enough for most. In case you want to change
