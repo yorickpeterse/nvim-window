@@ -135,7 +135,7 @@ require('nvim-window').setup({
   hint_hl = 'Bold',
 
   -- The border style to use for the floating window.
-  border = 'single'
+  border = 'single',
 
   -- How the hints should be rendered. The possible values are:
   --
