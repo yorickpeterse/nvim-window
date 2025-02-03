@@ -223,9 +223,27 @@ end
 
 -- Picks a window to jump to, and makes it the active window.
 function M.pick()
-  local windows = vim.tbl_filter(function(id)
-    return api.nvim_win_get_config(id).relative == ''
-  end, api.nvim_tabpage_list_wins(0))
+  local to_remove = {}
+  local windows = {}
+
+  for _, id in pairs(api.nvim_tabpage_list_wins(0)) do
+    local conf = api.nvim_win_get_config(id)
+
+    if conf.relative == '' then
+      table.insert(windows, id)
+    end
+
+    if conf.relative == 'win' and conf.focusable then
+      table.insert(windows, id)
+      to_remove[conf.win] = true
+    end
+  end
+
+  for idx, win_id in pairs(windows) do
+    if to_remove[win_id] then
+      table.remove(windows, idx)
+    end
+  end
 
   local window_keys = window_keys(windows)
   local hints_state = show_hints(window_keys, true)
