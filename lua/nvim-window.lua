@@ -229,8 +229,10 @@ function M.pick()
     local conf = api.nvim_win_get_config(id)
     if conf.relative == '' then
       table.insert(windows, id)
-    elseif conf.relative == 'win' and conf.focusable then
-      to_remove[id] = true
+    end
+    if conf.relative == 'win' and conf.focusable then
+      table.insert(windows, id)
+      to_remove[conf.win] = true
     end
   end
 
