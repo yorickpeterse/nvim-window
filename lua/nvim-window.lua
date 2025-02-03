@@ -225,7 +225,7 @@ end
 function M.pick()
   local to_remove = {}
   local windows = {}
-  for id in api.nvim_tabpage_list_wins(0) do
+  for _, id in pairs(api.nvim_tabpage_list_wins(0)) do
     local conf = api.nvim_win_get_config(id)
     if conf.relative == '' then
       table.insert(windows, id)
