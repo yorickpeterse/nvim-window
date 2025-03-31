@@ -5,7 +5,7 @@ local fn = vim.fn
 local M = {}
 
 -- The keycode for the Escape key, used to cancel the window picker.
-local escape = 27
+local escape = fn.nr2char(27)
 
 -- For the sake of keeping this plugin simple, we don't support changing the
 -- dimensions of the floating window.
