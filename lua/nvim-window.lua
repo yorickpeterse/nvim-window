@@ -5,7 +5,8 @@ local fn = vim.fn
 local M = {}
 
 -- The keycode for the Escape key, used to cancel the window picker.
-local escape = 27
+-- local escape = 27
+local escape = vim.fn.nr2char(27) -- yhb fix it
 
 -- For the sake of keeping this plugin simple, we don't support changing the
 -- dimensions of the floating window.
@@ -208,21 +209,7 @@ local function hide_hints(state, redraw)
   end
 end
 
--- Returns the hint character(s) for the given window, or `nil` if there aren't
--- any.
---
--- This method only returns a value if the `render` option is set to `status`.
-function M.hint(window)
-  return hints[window]
-end
-
--- Configures the plugin by merging the given settings into the default ones.
-function M.setup(user_config)
-  config = vim.tbl_extend('force', config, user_config)
-end
-
--- Picks a window to jump to, and makes it the active window.
-function M.pick()
+local function get_current_tabpage_winids()
   local to_remove = {}
   local windows = {}
 
@@ -244,22 +231,21 @@ function M.pick()
       table.remove(windows, idx)
     end
   end
+  return windows
+end
 
-  local window_keys = window_keys(windows)
-  local hints_state = show_hints(window_keys, true)
+-- note the hints_state for more than one characters choice
+local function get_selected_winid(hints_state, win_keys)
   local key = get_char()
-  local window = nil
-
   if not key or key == escape then
-    hide_hints(hints_state, true)
-    return
+    return nil
   end
 
-  local window = window_keys[key]
+  local window = win_keys[key]
   local extra = {}
   local choices = 0
 
-  for hint, win in pairs(window_keys) do
+  for hint, win in pairs(win_keys) do
     if vim.startswith(hint, key) then
       extra[hint] = win
       choices = choices + 1
@@ -267,7 +253,7 @@ function M.pick()
   end
 
   if choices > 1 then
-    hide_hints(hints_state, false)
+    hide_hints(hints_state, true)
     hints_state = show_hints(extra, true)
 
     local second = get_char()
@@ -275,17 +261,145 @@ function M.pick()
     if second then
       local combined = key .. second
 
-      window = window_keys[combined] or window_keys[key]
+      window = win_keys[combined] or win_keys[key]
     else
       window = nil
     end
   end
 
+  return window
+end
+
+config.motions_map = {
+  j = 'j',
+  k = 'k',
+  h = 'h',
+  l = 'l',
+  f = '',
+  b = '',
+  esc = '',
+}
+
+config.motions_leader = {
+  {
+    leader = ']',
+    func = function(winid)
+      local ch = get_char()
+      if not ch or ch == config.motions_map.esc then
+        return
+      end
+      vim.fn.win_execute(winid, 'normal ' .. ']' .. ch)
+      vim.api.nvim__redraw({ win = winid, flush = true })
+    end,
+  },
+  {
+    leader = '[',
+    func = function(winid)
+      local ch = get_char()
+      if not ch or ch == config.motions_map.esc then
+        return
+      end
+      vim.fn.win_execute(winid, 'normal ' .. '[' .. ch)
+      vim.api.nvim__redraw({ win = winid, flush = true })
+    end,
+  },
+  {
+    leader = 'z',
+    func = function(winid)
+      local ch = get_char()
+      if not ch or ch == config.motions_map.esc then
+        return
+      end
+      if ch == 'a' then
+        vim.fn.win_execute(winid, 'foldo')
+      elseif ch == 'o' then
+        vim.fn.win_execute(winid, 'foldo!')
+      elseif ch == 'O' then
+        vim.fn.win_execute(winid, '%foldo!')
+      else
+        return
+      end
+      vim.api.nvim__redraw({ win = winid, flush = true })
+    end,
+  },
+}
+
+local function deal_with_motion(winid)
+  while true do
+    local ch = get_char()
+    if not ch or ch == config.motions_map.esc then
+      return
+    end
+
+    local is_normal = true
+
+    -- leader function
+    for _, pair in pairs(config.motions_leader) do
+      if pair.leader == ch then
+        is_normal = false
+        pair.func(winid)
+      end
+    end
+
+    -- normal function
+    if is_normal then
+      if config.motions_map[ch] then
+        vim.fn.win_execute(winid, 'normal ' .. config.motions_map[ch])
+      else
+        vim.fn.win_execute(winid, 'normal ' .. ch)
+      end
+      vim.api.nvim__redraw({ win = winid, cursor = true, flush = true })
+    end
+  end
+end
+
+-- Returns the hint character(s) for the given window, or `nil` if there aren't
+-- any.
+--
+-- This method only returns a value if the `render` option is set to `status`.
+function M.hint(window)
+  return hints[window]
+end
+
+-- Configures the plugin by merging the given settings into the default ones.
+function M.setup(user_config)
+  config = vim.tbl_extend('force', config, user_config)
+end
+
+-- select other window but just for move the text not for edit
+function M.other()
+  local wins = get_current_tabpage_winids()
+  if #wins == 1 then
+    return
+  end
+  if #wins == 2 then
+    local x = wins[1] == vim.fn.bufwinid(0) and 1 or 2
+    deal_with_motion(wins[x])
+    return
+  end
+
+  local win_keys = window_keys(wins)
+  local hints_state = show_hints(win_keys, true)
+  local window = get_selected_winid(hints_state, win_keys)
+
   hide_hints(hints_state, true)
+  if window then
+    deal_with_motion(window)
+  end
+end
+
+-- Picks a window to jump to, and makes it the active window.
+function M.pick()
+  local windows = get_current_tabpage_winids()
+
+  local win_keys = window_keys(windows)
+  local hints_state = show_hints(win_keys, true)
+  local window = get_selected_winid(hints_state, win_keys)
 
   if window then
     api.nvim_set_current_win(window)
   end
+  hide_hints(hints_state, true)
 end
 
 return M
