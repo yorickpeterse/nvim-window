@@ -396,10 +396,10 @@ function M.pick()
   local hints_state = show_hints(win_keys, true)
   local window = get_selected_winid(hints_state, win_keys)
 
+  hide_hints(hints_state, true)
   if window then
     api.nvim_set_current_win(window)
   end
-  hide_hints(hints_state, true)
 end
 
 return M
