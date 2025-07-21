@@ -47,10 +47,6 @@ local config = {
   -- window. This can be used to change the background color.
   normal_hl = 'Normal',
 
-  -- The highlight group to apply to the line that contains the hint characters.
-  -- This is used to make them stand out more.
-  hint_hl = 'Bold',
-
   -- The border style to use for the floating window.
   border = 'single',
 
@@ -137,7 +133,6 @@ local function open_floats(mapping)
         true,
         { '', '  ' .. key .. '  ', '' }
       )
-      api.nvim_buf_add_highlight(bufnr, 0, config.hint_hl, 1, 0, -1)
 
       local float_window = api.nvim_open_win(bufnr, false, {
         relative = 'win',
