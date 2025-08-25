@@ -218,9 +218,17 @@ end
 
 -- Picks a window to jump to, and makes it the active window.
 function M.pick()
-  local windows = vim.tbl_filter(function(id)
-    return api.nvim_win_get_config(id).relative == ''
-  end, api.nvim_tabpage_list_wins(0))
+  local windows = {}
+
+  for _, id in ipairs(api.nvim_tabpage_list_wins(0)) do
+    local conf = api.nvim_win_get_config(id)
+
+    if conf.relative == '' then
+      table.insert(windows, id)
+    else
+      api.nvim_win_close(id, false)
+    end
+  end
 
   local window_keys = window_keys(windows)
   local hints_state = show_hints(window_keys, true)
