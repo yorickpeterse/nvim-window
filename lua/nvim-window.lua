@@ -56,6 +56,16 @@ local config = {
   -- - "status": renders the hints to a string and calls `redrawstatus`,
   --   allowing you to show the hints in a status or winbar line
   render = 'float',
+
+  -- A function that determines if a floating window should be closed or not.
+  --
+  -- The arguments are the window ID and its configuration as returned by
+  -- `nvim_win_get_config`.
+  --
+  -- By default all floating windows are closed.
+  close_window = function(id, conf)
+    return true
+  end,
 }
 
 local hints = {}
@@ -225,7 +235,7 @@ function M.pick()
 
     if conf.relative == '' then
       table.insert(windows, id)
-    else
+    elseif config.close_window(id, conf) then
       api.nvim_win_close(id, false)
     end
   end
