@@ -56,6 +56,16 @@ local config = {
   -- - "status": renders the hints to a string and calls `redrawstatus`,
   --   allowing you to show the hints in a status or winbar line
   render = 'float',
+
+  -- A function that determines should we hide each detected floating window or not.
+  -- Typically such windows are not suitable for picking, but it can be exceptions.
+  -- You can override the function to handle hiding taking into account actual window config.
+  --
+  -- @arg table window_conf See https://neo.vimhelp.org/api.txt.html#api-win_config for the config properties
+  -- @return boolean
+  hide_float_window = function (window_conf)
+    return true
+  end
 }
 
 local hints = {}
@@ -226,7 +236,9 @@ function M.pick()
     if conf.relative == '' then
       table.insert(windows, id)
     else
-      api.nvim_win_close(id, false)
+      if config.hide_float_window(conf) then
+        api.nvim_win_close(id, false)
+      end
     end
   end
 
